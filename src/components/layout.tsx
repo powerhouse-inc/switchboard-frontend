@@ -1,5 +1,4 @@
 import { useRouter } from "next/router";
-import "./globals.css";
 import Header from "@/components/header/header";
 import Head from "next/head";
 
