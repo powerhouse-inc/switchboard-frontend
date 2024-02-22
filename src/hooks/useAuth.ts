@@ -62,6 +62,7 @@ const useAuth = () => {
 
   useEffect(() => {
     const localToken = localStorage.getItem('token');
+    console.log(localToken)
     if (localToken && !gqlToken) {
       setGqlToken(localToken);
     }
@@ -114,10 +115,12 @@ const useAuth = () => {
 
       setAddress(data.system.auth.me.address);
       setSessions(data.system.auth.sessions);
-    } finally {
-      setIsLoading(false);
+    } catch (e) {
+      setAddress("");
+      setSessions([]);
     }
 
+    setIsLoading(false);
   };
 
   const createChallenge = async (address: string) => {
@@ -162,6 +165,7 @@ const useAuth = () => {
       const payload = jwtDecode(gqlToken) as { sessionId?: string } | undefined
       if (sessionId === payload?.sessionId) {
         setGqlToken(undefined);
+        setAddress("");
         setIsAuthorized(false);
       }
     }
@@ -194,6 +198,7 @@ const useAuth = () => {
       throw new Error('Token has invalid format')
     }
     await revokeSession(payload.sessionId)
+    localStorage.removeItem('token');
   }
 
   return { checkAuthValidity, signIn, signOut, createSession, revokeSession }
