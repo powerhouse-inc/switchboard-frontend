@@ -1,7 +1,8 @@
 import TokenForm from "@/components/tokens/token-form";
 import TokensTable from "@/components/tokens/tokens-table";
 import useAuth, { authStore } from "@/hooks/useAuth";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { ArrowRightStartOnRectangleIcon } from "@heroicons/react/24/solid";
 
 const User = () => {
     const address = authStore((state) => state.address);
@@ -27,7 +28,14 @@ const User = () => {
             <div className="bg-white px-5 flex flex-row gap-4 items-center my-auto">
                 <div className="flex py-2 border-b-4 border-orange-600 text-orange-500">API Tokens</div>
                 <div className="flex grow justify-end">
-                    <button>Sign Out</button>
+                    <button>
+                        <div className="flex flex-row items-center text-orange-400 hover:bg-gray-300 rounded">
+                            <span className="w-20">Sign Out</span>{" "}
+                            <span className="w-8">
+                                <ArrowRightStartOnRectangleIcon className="text-orange-500" />
+                            </span>
+                        </div>
+                    </button>
                 </div>
             </div>
             <TokenForm />
