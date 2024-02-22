@@ -24,9 +24,9 @@ export default function RootLayout({
                 <link rel="manifest" href="/site.webmanifest" />
                 <title>Switchboard API</title>
             </Head>
-            <div className="">
+            <div className="bg-gray-100">
                 <Header />
-                <main className={`mx-auto mt-14 min-h-[calc(100vh-64px)] ${container}`}>
+                <main className={`mx-auto mt-14 pt-14 min-h-[calc(100vh-64px)]  ${container}`}>
                     <div className="">{children}</div>
                 </main>
             </div>

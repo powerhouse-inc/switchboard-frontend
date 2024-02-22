@@ -23,11 +23,18 @@ const User = () => {
         );
     }
     return (
-        <div className="">
-            <h1 className="text-3xl font-bold mb-4">Manage Tokens</h1>
+        <div className="flex flex-col gap-8">
+            <div className="bg-white px-5 flex flex-row gap-4 items-center my-auto">
+                <div className="flex py-2 border-b-4 border-orange-600 text-orange-500">API Tokens</div>
+                <div className="flex grow justify-end">
+                    <button>Sign Out</button>
+                </div>
+            </div>
             <TokenForm />
-            <h2 className="text-xl font-semibold mt-8 mb-4">Existing Tokens</h2>
-            <TokensTable />
+            <div className="bg-white p-5 flex-flex-col gap-4">
+                <div className="font-semibold  mb-4">Existing Tokens</div>
+                <TokensTable />
+            </div>
         </div>
     );
 };

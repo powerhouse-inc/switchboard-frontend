@@ -28,17 +28,20 @@ const TokenForm = () => {
         setShowModal(true);
     };
 
+    const submitDisabled = formData.name === "";
+
     return (
-        <>
-            <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-8">
-                <div className="mb-4">
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+        <div className="bg-white p-5">
+            <span className="font-semibold mt-8 mb-4">Create new token</span>
+            <form onSubmit={handleSubmit} className="w-full mx-auto flex flex-row gap-4 items-end mt-4">
+                <div className="flex-1 flex-col">
+                    <label htmlFor="name" className="block text-sm font-semibold text-black">
                         Name
                     </label>
                     <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className="mt-1 p-2 border border-gray-300 rounded-md w-full" />
                 </div>
-                <div className="mb-4">
-                    <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
+                <div className="flex-1 flex-col">
+                    <label htmlFor="duration" className="block text-sm font-semibold text-black">
                         Duration
                     </label>
                     <select id="duration" name="duration" aria-placeholder="Select Duration" value={formData.duration} onChange={handleChange} className="mt-1 p-2 border border-gray-300 rounded-md w-full">
@@ -50,15 +53,17 @@ const TokenForm = () => {
                         <option value="0">Non Expiring</option>
                     </select>
                 </div>
-                <div className="mb-4">
-                    <label htmlFor="allowedOrigin" className="block text-sm font-medium text-gray-700">
+                <div className="flex-1 flex-col">
+                    <label htmlFor="allowedOrigin" className="block text-sm font-semibold text-black">
                         Allowed Origin
                     </label>
                     <input type="text" id="allowedOrigin" name="allowedOrigin" placeholder="*" value={formData.allowedOrigin} onChange={handleChange} className="mt-1 p-2 border border-gray-300 rounded-md w-full" />
                 </div>
-                <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
-                    Create New Token
-                </button>
+                <div className="h-full flex flex-col items-end">
+                    <button disabled={submitDisabled} type="submit" className={`bg-orange-400 ${submitDisabled ? `` : `hover:bg-orange-600`} text-white font-semibold py-2 px-4 rounded`}>
+                        Create New Token
+                    </button>
+                </div>
             </form>
             {showModal ? (
                 <>
@@ -89,7 +94,7 @@ const TokenForm = () => {
                     <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
                 </>
             ) : null}
-        </>
+        </div>
     );
 };
 
