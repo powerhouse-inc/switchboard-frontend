@@ -5,15 +5,30 @@ import { ApolloClient, InMemoryCache, createHttpLink, gql } from '@apollo/client
 import { useEffect } from 'react';
 import { setContext } from '@apollo/client/link/context';
 
+
+export interface Session {
+  id: string
+  createdAt: Date
+  createdBy: string
+  referenceExpiryDate?: Date
+  referenceTokenId?: string
+  isUserCreated?: boolean
+  name?: string
+  revokedAt?: Date
+  allowedOrigins?: string
+}
+
 interface AuthStore {
   gqlToken: string | undefined;
   isLoading: boolean;
   address: string;
   isAuthorized: boolean;
+  sessions: Session[];
   setGqlToken: (token: string | undefined) => void;
   setIsLoading: (loading: boolean) => void;
   setAddress: (address: string) => void;
   setIsAuthorized: (isAuthorized: boolean) => void;
+  setSessions: (sessions: Session[]) => void;
 }
 
 export const authStore = create<AuthStore>((set, get) => ({
@@ -21,6 +36,7 @@ export const authStore = create<AuthStore>((set, get) => ({
   isLoading: true,
   address: "",
   isAuthorized: false,
+  sessions: [],
   setGqlToken: (token: string | undefined) => {
     set(state => ({ ...state, gqlToken: token }))
   },
@@ -32,21 +48,30 @@ export const authStore = create<AuthStore>((set, get) => ({
   },
   setIsAuthorized: (isAuthorized: boolean) => {
     set(state => ({ ...state, isAuthorized }))
-  }
+  },
+  setSessions: (sessions: Session[]) => {
+    set(state => ({ ...state, sessions }))
+  },
 }));
 
 
 const useAuth = () => {
 
   const { connectWallet, signMessage } = useWallet();
-  const { gqlToken, setGqlToken, setIsLoading, setAddress, setIsAuthorized } = authStore();
+  const { gqlToken, setGqlToken, setIsLoading, setAddress, setIsAuthorized, setSessions } = authStore();
+
+  useEffect(() => {
+    const localToken = localStorage.getItem('token');
+    if (localToken && !gqlToken) {
+      setGqlToken(localToken);
+    }
+  }, []);
 
   const httpLink = createHttpLink({
     uri: process.env.NEXT_PUBLIC_SWITCHBOARD_GRAPHQL_ENDPOINT,
   });
 
   const authLink = setContext((_, { headers }) => {
-    console.log(gqlToken);
     return {
       headers: {
         ...headers,
@@ -70,6 +95,17 @@ const useAuth = () => {
                   me {
                     address
                   }
+                  sessions {
+                    id
+                    createdAt
+                    createdBy
+                    referenceExpiryDate
+                    referenceTokenId
+                    isUserCreated
+                    name
+                    revokedAt
+                    allowedOrigins
+                  }
                 }
               }
             }
@@ -77,6 +113,7 @@ const useAuth = () => {
       });
 
       setAddress(data.system.auth.me.address);
+      setSessions(data.system.auth.sessions);
     } finally {
       setIsLoading(false);
     }
@@ -103,14 +140,15 @@ const useAuth = () => {
     return data.solveChallenge.token;
   };
 
-  const createSession = async (name: string, expiryDurationSeconds: number | null, allowedOrigins: string) => {
-    const { data, errors } = await client.mutate({ mutation: gql`mutation { createSession(name: "${name}", expiryDurationSeconds: ${expiryDurationSeconds}, allowedOrigins: "${allowedOrigins}") { token } }` });
+  const createSession = async (name: string, expiryDurationSeconds: number | null, allowedOrigins: string): Promise<string> => {
+    const { data, errors } = await client.mutate({ mutation: gql`mutation { createSession(session: {name: "${name}", expiryDurationSeconds: ${expiryDurationSeconds}, allowedOrigins: "${allowedOrigins}"}) { token } }` });
 
     if (errors) {
       throw new Error(errors[0].message);
     }
 
-    return data.createSession.token;
+    checkAuthValidity();
+    return data.createSession.token as string;
   }
 
   const revokeSession = async (sessionId: string) => {
@@ -127,7 +165,7 @@ const useAuth = () => {
         setIsAuthorized(false);
       }
     }
-
+    checkAuthValidity();
     return data.value?.revokeSession?.referenceTokenId
   }
 
@@ -141,6 +179,7 @@ const useAuth = () => {
     const signature = await signMessage(message)
 
     const token = await solveChallenge(nonce, signature)
+    localStorage.setItem('token', token);
     setGqlToken(token)
     setIsAuthorized(true)
   }

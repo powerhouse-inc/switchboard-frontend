@@ -1,13 +1,9 @@
-export interface Token {
-    name: string;
-    type: string;
-    token: string;
-    expiresAt: string; // You might want to use a Date object here if applicable
-    allowedOrigins: string[];
-    status: "Active" | "Inactive"; // Assuming status can only be one of these two
-}
+import useAuth, { Session, authStore } from "@/hooks/useAuth";
 
-export const TokensTable = ({ tokens }: { tokens: Token[] }) => {
+export const TokensTable = () => {
+    const { revokeSession } = useAuth();
+    const sessions = authStore((state) => state.sessions);
+
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -37,20 +33,22 @@ export const TokensTable = ({ tokens }: { tokens: Token[] }) => {
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {tokens.map((token, index) => (
+                    {sessions?.map((session, index) => (
                         <tr key={index}>
-                            <td className="px-6 py-4 whitespace-nowrap">{token.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{token.type}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{token.token}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{token.expiresAt}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{token.allowedOrigins}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">{session.name}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">{session.isUserCreated ? "User created" : "Browser Session"}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">{session.referenceTokenId}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">{session.referenceExpiryDate?.toLocaleString() ?? "never"}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">{session.allowedOrigins}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${token.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{token.status}</span>
+                                <span className={`px-2 inline-flex`}>{session.revokedAt ? "Revoked at " + session.revokedAt.toLocaleString() : "Active since " + session.createdAt.toLocaleString()}</span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                                {/* Add action buttons here */}
-                                <button className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                                <button className="text-red-600 hover:text-red-900 ml-2">Delete</button>
+                                {session.revokedAt ? null : (
+                                    <button onClick={() => revokeSession(session.id)} className="text-red-600 hover:text-red-900">
+                                        Revoke
+                                    </button>
+                                )}
                             </td>
                         </tr>
                     ))}
