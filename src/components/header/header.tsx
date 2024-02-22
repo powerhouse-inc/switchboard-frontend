@@ -1,7 +1,10 @@
 import Link from "next/link";
 import SwitchboardLink from "../text/Link";
+import { authStore } from "@/hooks/useAuth";
 
 export default function Header() {
+    const address = authStore((state) => state.address);
+
     return (
         <header className="bg-orange-100 fixed w-full top-0 text-black py-2">
             <nav className="flex justify-between items-center flex-row">
@@ -18,10 +21,7 @@ export default function Header() {
                     <SwitchboardLink href="/graphql">Admin</SwitchboardLink>
                     <SwitchboardLink href="/graphql/monetalis">Monetalis</SwitchboardLink>
                 </div>
-                <div className="flex items-center space-x-4">
-                    <SwitchboardLink href="/user-information">User Information</SwitchboardLink>
-                    {/* Add user information component or avatar here */}
-                </div>
+                <div className="flex items-center space-x-4">{!address ? <SwitchboardLink href="/user-information">User Information</SwitchboardLink> : <div>{address}</div>}</div>
             </nav>
         </header>
     );

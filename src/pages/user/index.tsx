@@ -1,9 +1,20 @@
 import TokenForm from "@/components/tokens/token-form";
 import TokensTable, { Token } from "@/components/tokens/tokens-table";
-import { useState } from "react";
+import useAuth, { authStore } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
 
 const User = () => {
-    // Dummy token data for demonstration
+    const address = authStore((state) => state.address);
+    const gqlToken = authStore((state) => state.gqlToken);
+
+    const { signIn, checkAuthValidity } = useAuth();
+
+    useEffect(() => {
+        if (gqlToken) {
+            checkAuthValidity();
+        }
+    }, [gqlToken]);
+
     const [tokens, setTokens] = useState<Token[]>([
         {
             name: "Token 1",
@@ -23,6 +34,13 @@ const User = () => {
         },
     ]);
 
+    if (!address) {
+        return (
+            <div>
+                <button onClick={signIn}>Login</button>
+            </div>
+        );
+    }
     return (
         <div className="">
             <h1 className="text-3xl font-bold mb-4">Manage Tokens</h1>

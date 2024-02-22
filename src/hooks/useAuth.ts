@@ -1,8 +1,9 @@
 import { jwtDecode } from 'jwt-decode'
 import useWallet from './useWallet'
 import { create } from 'zustand';
-import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
+import { ApolloClient, InMemoryCache, createHttpLink, gql } from '@apollo/client';
 import { useEffect } from 'react';
+import { setContext } from '@apollo/client/link/context';
 
 interface AuthStore {
   gqlToken: string | undefined;
@@ -35,15 +36,28 @@ export const authStore = create<AuthStore>((set, get) => ({
 }));
 
 
-const client = new ApolloClient({ uri: process.env.NEXT_PUBLIC_SWITCHBOARD_GRAPHQL_ENDPOINT, cache: new InMemoryCache() });
-
 const useAuth = () => {
 
   const { connectWallet, signMessage } = useWallet();
   const { gqlToken, setGqlToken, setIsLoading, setAddress, setIsAuthorized } = authStore();
 
-  useEffect(() => {
-    checkAuthValidity()
+  const httpLink = createHttpLink({
+    uri: process.env.NEXT_PUBLIC_SWITCHBOARD_GRAPHQL_ENDPOINT,
+  });
+
+  const authLink = setContext((_, { headers }) => {
+    console.log(gqlToken);
+    return {
+      headers: {
+        ...headers,
+        authorization: gqlToken ? `Bearer ${gqlToken}` : "",
+      }
+    }
+  });
+
+  const client = new ApolloClient({
+    link: authLink.concat(httpLink),
+    cache: new InMemoryCache(),
   });
 
   const checkAuthValidity = async () => {
@@ -51,20 +65,18 @@ const useAuth = () => {
       const { data, error } = await client.query({
         query: gql`
             query {
-                me {
-                    id
-                    email
-                    name
+              system {
+                auth {
+                  me {
+                    address
+                  }
                 }
+              }
             }
         `,
       });
 
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      setAddress(data.me.address);
+      setAddress(data.system.auth.me.address);
     } finally {
       setIsLoading(false);
     }
@@ -113,7 +125,6 @@ const useAuth = () => {
       if (sessionId === payload?.sessionId) {
         setGqlToken(undefined);
         setIsAuthorized(false);
-        await checkAuthValidity()
       }
     }
 
@@ -131,8 +142,7 @@ const useAuth = () => {
 
     const token = await solveChallenge(nonce, signature)
     setGqlToken(token)
-
-    await checkAuthValidity()
+    setIsAuthorized(true)
   }
 
 
