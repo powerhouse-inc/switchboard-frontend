@@ -45,15 +45,19 @@ export default function Header() {
                     </SwitchboardLink>
                 </div>
                 <div className="flex  justify-center gap-4">
-                    <select id="graphqlPlayground" name="graphqlPlayground" aria-placeholder="Select GraphQL Playground" className="p-2 border border-gray-300 rounded-md w-full" onChange={selectGraphQLPlayground}>
-                        <option value="">GraphQL Playgrounds</option>
-                        <option value="system">System</option>
-                        {drives.map((drive, i) => (
-                            <option value={drive} key={i}>
-                                {drive}
-                            </option>
-                        ))}
-                    </select>
+                    {address !== "" ? (
+                        <select id="graphqlPlayground" name="graphqlPlayground" aria-placeholder="Select GraphQL Playground" className="p-2 border border-gray-300 rounded-md w-full" onChange={selectGraphQLPlayground}>
+                            <option value="">GraphQL Playgrounds</option>
+                            <option value="system">System</option>
+                            {drives.map((drive, i) => (
+                                <option value={drive} key={i}>
+                                    {drive}
+                                </option>
+                            ))}
+                        </select>
+                    ) : (
+                        ""
+                    )}
                 </div>
                 <div className="flex flex-row gap-2">
                     <div className="flex items-center  text-orange-300">
