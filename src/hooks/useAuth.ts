@@ -62,7 +62,6 @@ const useAuth = () => {
 
   useEffect(() => {
     const localToken = localStorage.getItem('token');
-    console.log(localToken)
     if (localToken && !gqlToken) {
       setGqlToken(localToken);
     }
@@ -88,7 +87,7 @@ const useAuth = () => {
 
   const checkAuthValidity = async () => {
     try {
-      const { data, error } = await client.query({
+      const { data, errors } = await client.query({
         query: gql`
             query {
               system {
@@ -112,6 +111,13 @@ const useAuth = () => {
             }
         `,
       });
+
+      if (errors) {
+        setAddress("");
+        setSessions([]);
+
+        return;
+      }
 
       setAddress(data.system.auth.me.address);
       setSessions(data.system.auth.sessions);
