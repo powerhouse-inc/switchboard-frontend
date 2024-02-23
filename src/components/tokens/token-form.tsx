@@ -13,7 +13,7 @@ const TokenForm = () => {
 
     const { createSession } = useAuth();
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData({
             ...formData,

@@ -34,8 +34,8 @@ export default function Header() {
                     </SwitchboardLink>
                 </div>
                 <div className="flex  justify-center gap-4 pt-3">
-                    {navLinks.map((link) => (
-                        <SwitchboardLink className={getClass(link.path)} href={link.path}>
+                    {navLinks.map((link, i) => (
+                        <SwitchboardLink className={getClass(link.path)} href={link.path} key={i}>
                             {link.name}
                         </SwitchboardLink>
                     ))}
